@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/iMac-2/CLionProjects/PA_2/BinNode.hpp
+utils.h
+/Users/iMac-2/CLionProjects/PA_2/utils.h
+Queue.hpp
+/Users/iMac-2/CLionProjects/PA_2/Queue.hpp
+
+/Users/iMac-2/CLionProjects/PA_2/List.hpp
+
+/Users/iMac-2/CLionProjects/PA_2/Queue.hpp
+List.hpp
+/Users/iMac-2/CLionProjects/PA_2/List.hpp
+
+/Users/iMac-2/CLionProjects/PA_2/main.cpp
+iostream
+-
+BinNode.hpp
+/Users/iMac-2/CLionProjects/PA_2/BinNode.hpp
+
+/Users/iMac-2/CLionProjects/PA_2/utils.h
+
