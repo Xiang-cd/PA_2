@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#define  Debug true
+#define  Debug false
 
 using namespace std;
 
@@ -20,6 +20,7 @@ public:
         is_lc = false;
         parent = NULL;
         max_sub_tree_height = -1;
+        max_back_brother_height = -1;
     }
     Node *parent;
     Node *left;
@@ -31,6 +32,7 @@ public:
     int num_child;
     bool is_lc;
     int max_sub_tree_height;
+    int max_back_brother_height;
 };
 
 
@@ -65,6 +67,7 @@ public:
     }
 
     void update_size_above(Node *x, int size) {
+        if (size == 0) return;
         while (x->parent) {
             x->parent->size += size;
             x = x->parent;
@@ -139,12 +142,11 @@ inline Node *find_node(Tree *tree) {
     int len, child_index;
     scanf("%d", &len);
     Node *start_node = tree->root;
-    Node *find_node = NULL;
+    Node *find_node = tree->root;
     for (int i = 0; i < len; ++i) {
         scanf("%d", &child_index);
         find_node = tree->find_index_child(start_node, child_index);
-        if (find_node) { start_node = find_node;
-            print_Node(find_node); }
+        if (find_node) { start_node = find_node;}
         else {
             for (int j = i + 1; j < len; ++j) { scanf("%d", &child_index); }
             return start_node;
@@ -156,7 +158,8 @@ inline Node *find_node(Tree *tree) {
 
 int main() {
 #ifndef _OJ_
-    freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
+//    freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
+    freopen("/Users/xxy/CLionProjects/DSA/PA_2/input.txt", "r", stdin);
 //    freopen("output.txt", "w", stdout);
 #endif
     Node *tmp;

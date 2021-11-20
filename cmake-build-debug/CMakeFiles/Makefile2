@@ -54,10 +54,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/iMac-2/CLionProjects/PA_2
+CMAKE_SOURCE_DIR = /Users/xxy/CLionProjects/DSA/PA_2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/iMac-2/CLionProjects/PA_2/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/xxy/CLionProjects/DSA/PA_2/cmake-build-debug
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -81,14 +81,14 @@ clean: CMakeFiles/PA_2.dir/clean
 CMakeFiles/PA_2.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PA_2.dir/build.make CMakeFiles/PA_2.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/PA_2.dir/build.make CMakeFiles/PA_2.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/iMac-2/CLionProjects/PA_2/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target PA_2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/xxy/CLionProjects/DSA/PA_2/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target PA_2"
 .PHONY : CMakeFiles/PA_2.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/PA_2.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/iMac-2/CLionProjects/PA_2/cmake-build-debug/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/xxy/CLionProjects/DSA/PA_2/cmake-build-debug/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/PA_2.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/iMac-2/CLionProjects/PA_2/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/xxy/CLionProjects/DSA/PA_2/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/PA_2.dir/rule
 
 # Convenience name for target.
