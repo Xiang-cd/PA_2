@@ -1,106 +1,117 @@
 #include <iostream>
 #include <string.h>
 
-#define Len 1 << 21
+#define Debug true
+#define Len  200000
+#define Mid(x, y) ((x)+(y))/2
+#define LSon(x) 2*(x)+1
+#define RSon(x) 2*(x)+2
+#define Parent(x)  ((x)-1)/2
 
 using namespace std;
+int N, M, num_of_seg;
+
+struct seg {
+    seg() : begin(0), len(0) {}
+
+    int begin, len;
+};
+
+bool hq[Len] = {0}; // H 为1，Q为0
+int startpoints[Len] = {0};
+int endpoints[Len] = {0};
+long total_points[2 * Len] = {0};
+int int_start[Len * 2] = {0};
+int int_len[Len * 2] = {0};
+seg segments[Len * 2] = {};
+int st_len[4 * Len] = {0};
+int st_value[4 * Len] = {0};
+int st[4 * Len] = {0};
 
 
-char list[Len] = {'\0'};
-char check_map[Len] = {'\0'};
-int len = 0;
-char a[24] = {'0'};
-
-char get_bit(int index, int position) {
-    return  list[index] & (1 << position);
-}
-
-int scan(int x) {
-    memset(check_map, 0, sizeof(char) * Len);
-    if (x >= len or x <= 0) return -1;
-    int mod_value = 1 << x;
-    int index = int();
-    int posi = x;
-    int count = 0;
-    for (int i = 1; i < x; ++i) {
-        index *= 2;
-        if (get_bit(i/8,i%8)) index++;
-    }
-    check_map[index] = true;
-    count++;
-    while (posi < len) {
-        index = index * 2;
-        if (list[posi])index++;
-        index = index % mod_value;
-        if (not check_map[index]) {
-            count++;
-            check_map[index] = true;
-        }
-        ++posi;
-    }
-    return count;
-}
-
-void print(int num, int length) {
-    memset(a, '0', sizeof(char) * 24);
-    int i = 0;
-    while (num != 0) {
-        if (num % 2) { a[i++] = '1'; }
-        else a[i++] = '0';
-        num = num / 2;
-    }
-    for (int j = length - 1; j >= 0; --j) {
-        printf("%c", a[j]);
-    }
-}
-
-void binary_search() {
-    int low = 1;
-    int high = 24;
-    int mid;
-    int ans, ans_before;
-    while (low <= high) {
-        mid = (low + high) / 2;
-        ans_before = scan(mid - 1);
-        ans = scan(mid);
-        if (ans == -1) {
-            high = mid - 1;
-            continue;
+void quicksort(long a[], int start, int end) {
+    if (start >= end - 1)return;
+    int pivot = a[start];
+    int index = start;
+    int right = end - 1;
+    for (int i = 0; i < end - start - 1; ++i) {
+        if (a[index + 1] > pivot) {
+            int tmp = a[index + 1];
+            a[index + 1] = a[right];
+            a[right] = tmp;
+            right--;
         } else {
-            if (ans == 1 << mid) {
-                low = mid + 1;
-                continue;
-            } else {
-                if (ans_before == 1 << (mid - 1)) {
-                    for (int i = 0; i < 2 << mid; ++i) {
-                        if (not check_map[i]) {
-                            print(i, mid);
-                            break;
-                        }
-                    }
-                    break;
-                } else {
-                    high = mid - 1;
-                }
-            }
+            int tmp = a[index];
+            a[index] = a[index + 1];
+            a[index + 1] = tmp;
+            index++;
         }
+    }
+    quicksort(a, start, index);
+    quicksort(a, index + 1, end);
+}
+
+int construct(int start, int end, int si) {
+    if (left == end) {
+        st[si] = segments[start].begin;
+        st_len[si] = segments[start].len;
+        return st_len[si];
+    }
+    st[si] = segments[start].begin;
+    int mid = Mid(start, end);
+    return st_len[si] = construct(start, mid, si * 2 + 1) + construct(start + 1, end, si * 2 + 2);
+}
+
+void build(int len) {
+    num_of_seg = 0;
+    // 先确定区间，再组成平衡树
+    for (int i = 0; i < len - 1; ++i) {
+        if (total_points[i] == total_points[i + 1]) continue;
+        segments[num_of_seg].begin = total_points[i];
+        segments[num_of_seg].len = total_points[i + 1] - total_points[i];
+        ++num_of_seg;
+    }
+    for (int i = 0; i < num_of_seg; ++i) {
+        printf("%d %d\n", segments[i].begin,segments[i].len);
+    }
+    construct(0, num_of_seg, 0);
+}
+
+
+void read() {
+    scanf("%d%d", &N, &M);
+    char tmp;
+    for (int i = 0; i < M; ++i) {
+        cin >> tmp;
+        scanf(" %d %d", &startpoints[i], &endpoints[i]);
+        total_points[2 * i] = startpoints[i];
+        total_points[2 * i + 1] = endpoints[i] + 1;
+        if (tmp == 'H') hq[i] = true;
     }
 }
 
 int main() {
 #ifndef _OJ_
-//    freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
+    //    freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
     freopen("/Users/xxy/CLionProjects/DSA/PA_2/input.txt", "r", stdin);
-//    freopen("output.txt", "w", stdout);
+//    freopen("/Users/xxy/CLionProjects/DSA/PA_2/output.txt", "w", stdout);
 #endif
-    char ch;
-    memset(list, 0, sizeof(char) * Len);
-    while ((ch = getchar()) != EOF) {
-        list[len / 8] = list[len / 8] << 1;
-        if (ch - '0')list[len / 8] += 1;
-        ++len;
+    read();
+    quicksort(total_points, 0, 2 * M);
+    if (Debug) {
+        for (int i = 0; i < 2 * M; ++i) printf("%ld ", total_points[i]);
+        cout << endl;
     }
 
-    binary_search();
+    build(2 * M);
+    if (Debug) {
+        printf("%d %d\n", st[0], st_len[0]);
+        printf("%d %d    %d %d        \n", st[LSon(0)], st_len[LSon(0)], st[RSon(0)], st_len[RSon(0)]);
+        printf("%d %d    %d %d    %d %d    %d %d", st[LSon(1)], st_len[RSon(1)], st[RSon(1)], st[RSon(1)], st[LSon(2)],
+               st_len[
+                       LSon(2)], st[RSon(2)], st_len[RSon(2)]);
+
+    }
+
     return 0;
 }

@@ -10,59 +10,57 @@ using namespace std;
 
 class Node {
 public:
-    Node() {
-        left = NULL;
-        right = NULL;
-        height = 0;
-        elder_brother = NULL;
-        size = 1;
-        num_child = 0;
-        is_lc = false;
-        parent = NULL;
-        max_sub_tree_height = -1;
-        max_back_brother_height = -1;
+    Node() : left(NULL), right(NULL), elder_brother(NULL), parent(NULL), size(1), height(0), lastchild(NULL),
+             max_back_brother_height(-1) {}
+    Node *parent, *left, *right, *elder_brother, *lastchild;
+    int height, index, size, max_back_brother_height;
+
+    void get_size() {
+        Node *s = NULL;
+//        cout<<index<<endl;
+        if (left) s = left;
+        else return;
+        while (s) {
+            s->get_size();
+            size += s->size;
+            s = s->right;
+        }
     }
-    Node *parent;
-    Node *left;
-    Node *right;
-    Node *elder_brother;
-    int height;
-    int index;
-    int size;
-    int num_child;
-    bool is_lc;
-    int max_sub_tree_height;
-    int max_back_brother_height;
+
+    void get_height() {
+        Node *s;
+        if (lastchild)s = lastchild;
+        else return;
+        while (s) {
+            s->get_height();
+            if (s->right) s->max_back_brother_height = max(s->right->height, s->right->max_back_brother_height);
+            else s->max_back_brother_height = -1;
+            s = s->elder_brother;
+        }
+        if (left) height = max(left->height, left->max_back_brother_height) + 1;
+        else height = 0;
+    }
 };
 
 
 class Tree {
 public:
     Node *root;
+
     Tree() { root = NULL; }
 
     void update_height_above(Node *x) {
-        while (x->parent) {
-            if (x->parent->max_sub_tree_height >= x->height) {
-                return;
-            } else {
-                x->parent->max_sub_tree_height = x->height;
-                x->parent->height = x->height + 1;
-                x = x->parent;
-            }
-        }
-    }
-
-    void reupdate_height_above(Node *x) {
-        int max;
-        x = x->parent;
         while (x) {
-            max = -1;
-            for (int i = 0; i < x->num_child; ++i) {
-                if (int tmp = find_index_child(x, i)->height > max)max = tmp;
+            if (x->right)x->max_back_brother_height = max(x->right->height, x->right->max_back_brother_height);
+            else x->max_back_brother_height = -1;
+            // 如果有右兄弟，则可以继续维护最大后缀高度
+            if (x->elder_brother) x = x->elder_brother;
+            else {
+                x = x->parent;
+                if (!x) return;  //或许不用加 if x。left
+                if (x->left)x->height = max(x->left->height, x->left->max_back_brother_height) + 1;
+                else x->height = 0;
             }
-            x->height = max + 1;
-            x = x->parent;
         }
     }
 
@@ -73,6 +71,13 @@ public:
             x = x->parent;
         }
     }
+
+//    void update_size_init(Node *x) {
+//        while (x->parent){
+//            x->parent->size += x->size;
+//            x =x->parent    ;
+//        }
+//    }
 
     Node *find_index_child(Node *p, int x) {
         if (!p->left)return NULL;
@@ -86,33 +91,30 @@ public:
 
     Node *separate(Node *x) {
         //如果是最长子，则将父亲的孩子指针指向它最大的兄弟
-        if (x->is_lc) {
+        if (!x->elder_brother) {
             x->parent->left = x->right;
             if (x->right) {
-                //如果有右兄弟，则设置il，将兄弟指针清空
-                x->right->is_lc = true;
-                x->right->elder_brother = NULL;
+                x->right->elder_brother = NULL; //如果有右兄弟，则设置il，将兄弟指针清空
+                update_height_above(x->right);
+            } else {
+                x->parent->height = 0;
+                update_height_above(x->parent);
             }
         } else {
             x->elder_brother->right = x->right;
-            if (x->right) {
-                x->right->elder_brother = x->elder_brother;
-            }
+            if (x->right)x->right->elder_brother = x->elder_brother;
+            update_height_above(x->elder_brother);
         }
         update_size_above(x, -x->size);//从父亲开始，减去被删去子树的规模
-        x->parent->num_child--;
-        reupdate_height_above(x);
         return x;
     }
 
     void insert(Node *target, Node *src, int posi) {
-        target->num_child++;
-        src->is_lc = false;
         src->parent = target;
         if (posi == 0) {
-            src->is_lc = true;
             src->elder_brother = NULL;
             src->right = target->left;
+            if (src->right) src->right->elder_brother = src;
             target->left = src;
         } else {
             Node *elder = find_index_child(target, posi - 1);
@@ -134,9 +136,13 @@ Node *total[1000010] = {NULL};
 
 void print_Node(Node *x) {
     if (x->parent) {
-        printf("%d, h: %d, size:%d, parent: %d, il: %d\n", x->index, x->height, x->size, x->parent->index, x->is_lc);
+        printf("%d, h: %d, size:%d, parent: %d, eld: %d, smaller: %d, mbh:%d\n", x->index, x->height, x->size,
+               x->parent->index,
+               (x->elder_brother) ? x->elder_brother->index : -999, (x->right) ? x->right->index : -999,
+               x->max_back_brother_height);
     } else { printf("%d, h: %d, size:%d, root\n", x->index, x->height, x->size); }
 }
+
 
 inline Node *find_node(Tree *tree) {
     int len, child_index;
@@ -146,7 +152,7 @@ inline Node *find_node(Tree *tree) {
     for (int i = 0; i < len; ++i) {
         scanf("%d", &child_index);
         find_node = tree->find_index_child(start_node, child_index);
-        if (find_node) { start_node = find_node;}
+        if (find_node) { start_node = find_node; }
         else {
             for (int j = i + 1; j < len; ++j) { scanf("%d", &child_index); }
             return start_node;
@@ -173,14 +179,12 @@ int main() {
 
     for (int i = 1; i <= N; ++i) {
         scanf("%d", &num_of_child);
-        total[i]->num_child = num_of_child;
         if (num_of_child == 0)continue;
         for (int j = 0; j < num_of_child; ++j) {
             scanf("%d", &position);
             total[position]->parent = total[i];
             if (j == 0) {
                 total[i]->left = total[position];
-                total[position]->is_lc = true;
                 tmp = total[position];
             } else {
                 tmp->right = total[position];
@@ -188,23 +192,35 @@ int main() {
                 tmp = total[position];
             }
         }
-        tree->update_height_above(total[position]);
-        total[i]->size += num_of_child;
-        tree->update_size_above(total[i], num_of_child);
+        total[i]->lastchild = total[position];
+//        tree->update_height_above(total[position]);
+//        tree->update_size_above(total[i], total[i]->size - 1);
     }
-//    if (Debug){for (int i = 1; i <= N; ++i) {print_Node(total[i]);}}
 
+    tree->root->get_size();
+    tree->root->get_height();
 
+    if (Debug) {
+        for (int i = 1; i <= N; ++i) { print_Node(total[i]); }
+        printf("build\n\n");
+    }
 
     for (int i = 0; i < M; ++i) {
         scanf("%d", &type);
         if (type == 0) {
             int insert_posi;
             Node *src = find_node(tree);
-            if (Debug) { print_Node(src); }
+            if (Debug) {
+                printf("src:\n");
+                print_Node(src);
+            }
             tree->separate(src);
             Node *target = find_node(tree);
-            if (Debug) { print_Node(target); }
+            if (Debug) {
+                printf("dst:\n");
+                print_Node(target);
+                printf("\n");
+            }
             scanf("%d", &insert_posi);
             tree->insert(target, src, insert_posi);
 
@@ -212,10 +228,18 @@ int main() {
             Node *src = find_node(tree);
             if (Debug) { print_Node(src); }
             printf("%d\n", src->height);
+            if (Debug) {
+                for (int i = 1; i <= N; ++i) { print_Node(total[i]); }
+                printf("q height\n\n");
+            }
         } else {
             Node *src = find_node(tree);
             if (Debug) { print_Node(src); }
             printf("%d\n", src->size);
+            if (Debug) {
+                for (int i = 1; i <= N; ++i) { print_Node(total[i]); }
+                printf("q size\n\n");
+            }
         }
     }
 
