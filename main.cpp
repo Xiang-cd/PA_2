@@ -1,92 +1,152 @@
 #include <iostream>
+#include "crc32.h"
 #include <string.h>
 
-#define Debug true
-#define Len  200000
-#define Mid(x, y) ((x)+(y))/2
-#define LSon(x) 2*(x)+1
-#define RSon(x) 2*(x)+2
-#define Parent(x)  ((x)-1)/2
+#define Debug false
+#define Time false
+#define Mod 9999991
+#define Size 10000000
 
 using namespace std;
-int N, M, num_of_seg;
+typedef long l;
+clock_t startT, endT;
+int N;
+char tmp[5] = "";
+char gtmp[9] = "";
+char queue[9] = {};
+int queue_len = 0;
+l inputindex;
+l table[Size] = {0};
+unsigned positions[Size] = {0};
+bool Di[Size] = {false};
+unsigned char *salt = (unsigned char *) tmp;
+string alpha = "0123456789tsinghua";
 
-struct seg {
-    seg() : begin(0), len(0) {}
-
-    int begin, len;
-};
-
-bool hq[Len] = {0}; // H 为1，Q为0
-int startpoints[Len] = {0};
-int endpoints[Len] = {0};
-long total_points[2 * Len] = {0};
-int int_start[Len * 2] = {0};
-int int_len[Len * 2] = {0};
-seg segments[Len * 2] = {};
-int st_len[4 * Len] = {0};
-int st_value[4 * Len] = {0};
-int st[4 * Len] = {0};
+inline void push(char a) {
+    if (queue_len < 8) {
+        queue[queue_len] = a;
+        queue_len++;
+    } else {
+        memmove(queue, queue + 1, 7);
+        queue[7] = a;
+    }
+}
 
 
-void quicksort(long a[], int start, int end) {
-    if (start >= end - 1)return;
-    int pivot = a[start];
-    int index = start;
-    int right = end - 1;
-    for (int i = 0; i < end - start - 1; ++i) {
-        if (a[index + 1] > pivot) {
-            int tmp = a[index + 1];
-            a[index + 1] = a[right];
-            a[right] = tmp;
-            right--;
-        } else {
-            int tmp = a[index];
-            a[index] = a[index + 1];
-            a[index + 1] = tmp;
-            index++;
+inline void read() {
+    cin >> N;
+    cin >> salt;
+}
+
+inline int ctoi(char a) {
+    if (a <= '9' and a >= '0')return a + 1 - '0';
+    switch (a) {
+        case 't':
+            return 11;
+        case 's':
+            return 12;
+        case 'i':
+            return 13;
+        case 'n':
+            return 14;
+        case 'g':
+            return 15;
+        case 'h':
+            return 16;
+        case 'u':
+            return 17;
+        case 'a':
+            return 18;
+        default:
+            return 0;
+    }
+}
+
+inline char itoc(int x) {
+    if (x > 0 and x <= 18)return alpha[x - 1];
+    else return '\0';
+}
+
+inline l stol(char *a) {
+    l ans = 0;
+    int pow = 1;
+    for (int i = 0; i < 8; ++i) {
+        ans += ctoi(a[i]) * pow;
+        pow = pow * 19;
+    }
+    return ans;
+}
+
+inline void ltos(l x) {
+    memset(gtmp, 0, 8);
+    for (int i = 0; i < 8; ++i) {
+        gtmp[i] = itoc(int(x % 19));
+        x = x / 19;
+    }
+}
+
+inline void put(unsigned pos, l i) {
+    ltos(i);
+    unsigned posi = pos % Mod;
+    bool flag = true;
+    while (table[posi]) {
+        if (positions[posi] == pos and i != table[posi]) { //位置相同，但代表但字符串不同，则为重复
+            if (Debug and flag) {
+                printf("%u %u %ld  ", posi, pos, i);
+                cout << gtmp << endl;
+                flag = false;
+            }
+            Di[posi] = true;
+            return;
+        } else if (positions[posi] == pos and i == table[posi]) return; //重复插入，置之不理
+        posi++;
+        if (posi >= Mod) posi = 2;
+    }
+    table[posi] = i;
+    positions[posi] = pos;
+}
+
+inline int get(unsigned pos) {
+    unsigned posi = pos % Mod;
+    while (positions[posi] and posi <= Mod) {
+        if (Di[posi] and pos == positions[posi]) return -1; // 已经重复的单词位置，并且对应的单词hash一致
+        else if (positions[posi] == pos) return (int) posi; //找到了
+        posi++;
+        if (posi >= Mod) posi = 2;
+    }
+    return 0;
+}
+
+bool is_enmpty(l i) {
+    while (i > 0) {
+        if (i % 19 == 0) return true;
+        i = i / 19;
+    }
+    return false;
+}
+
+void init() {
+    for (l i = 0; i < 19 * 19 * 19 * 19 * 19; ++i) {
+        if (is_enmpty(i))continue;
+        ltos(i);
+        unsigned pos = crc32(0, (unsigned char *) gtmp, strlen((char *) gtmp));
+        pos = crc32(pos, salt, strlen((char *) salt));
+        put(pos, i);
+    }
+}
+
+inline void add() {
+    char temp[9] = {'\0'};
+    if (queue_len >= 6) {
+        for (int i = 0; i < queue_len - 5; ++i) {
+            memset(temp, 0, 9);
+            memcpy(temp, queue + 2 - i - (8 - queue_len), 6 + i);
+            if (Debug)cout << temp << endl;
+            l value = stol(temp);
+            unsigned pos = crc32(0, (unsigned char *) temp, strlen((char *) temp));
+            pos = crc32(pos, salt, strlen((char *) salt));
+            put(pos, value);
         }
-    }
-    quicksort(a, start, index);
-    quicksort(a, index + 1, end);
-}
-
-int construct(int start, int end, int si) {
-    if (left == end) {
-        st[si] = segments[start].begin;
-        st_len[si] = segments[start].len;
-        return st_len[si];
-    }
-    st[si] = segments[start].begin;
-    int mid = Mid(start, end);
-    return st_len[si] = construct(start, mid, si * 2 + 1) + construct(start + 1, end, si * 2 + 2);
-}
-
-void build(int len) {
-    num_of_seg = 0;
-    // 先确定区间，再组成平衡树
-    for (int i = 0; i < len - 1; ++i) {
-        if (total_points[i] == total_points[i + 1]) continue;
-        segments[num_of_seg].begin = total_points[i];
-        segments[num_of_seg].len = total_points[i + 1] - total_points[i];
-        ++num_of_seg;
-    }
-    for (int i = 0; i < num_of_seg; ++i) {
-        printf("%d %d\n", segments[i].begin,segments[i].len);
-    }
-    construct(0, num_of_seg, 0);
-}
-
-
-void read() {
-    scanf("%d%d", &N, &M);
-    char tmp;
-    for (int i = 0; i < M; ++i) {
-        cin >> tmp;
-        scanf(" %d %d", &startpoints[i], &endpoints[i]);
-        total_points[2 * i] = startpoints[i];
-        total_points[2 * i + 1] = endpoints[i] + 1;
-        if (tmp == 'H') hq[i] = true;
     }
 }
 
@@ -96,22 +156,30 @@ int main() {
     freopen("/Users/xxy/CLionProjects/DSA/PA_2/input.txt", "r", stdin);
 //    freopen("/Users/xxy/CLionProjects/DSA/PA_2/output.txt", "w", stdout);
 #endif
+    if (Time) startT = clock();
     read();
-    quicksort(total_points, 0, 2 * M);
-    if (Debug) {
-        for (int i = 0; i < 2 * M; ++i) printf("%ld ", total_points[i]);
-        cout << endl;
+    init();
+//    char s[9] = "1234567";
+//    l j = stol(s);
+//    unsigned pos = crc32(0, (unsigned char *) s, strlen((char *) s));
+//    pos = crc32(pos, salt, strlen((char *) salt));
+//    cout<<pos <<"!"<< j<<endl;
+    for (int i = 0; i < N; ++i) {
+        cin >> hex >> inputindex;
+//        cout<<inputindex<<endl;
+        unsigned posi = get(inputindex);
+        if (posi == -1)cout << "Duplicate" << endl;
+        else if (posi == 0) cout << "No" << endl;
+        else {
+            ltos(table[posi]);
+            cout << gtmp << endl;
+            push(gtmp[0]);
+            add();
+        }
     }
-
-    build(2 * M);
-    if (Debug) {
-        printf("%d %d\n", st[0], st_len[0]);
-        printf("%d %d    %d %d        \n", st[LSon(0)], st_len[LSon(0)], st[RSon(0)], st_len[RSon(0)]);
-        printf("%d %d    %d %d    %d %d    %d %d", st[LSon(1)], st_len[RSon(1)], st[RSon(1)], st[RSon(1)], st[LSon(2)],
-               st_len[
-                       LSon(2)], st[RSon(2)], st_len[RSon(2)]);
-
+    if (Time) {
+        endT = clock();
+        cout << "cost" << (double) (endT - startT) / CLOCKS_PER_SEC << "s" << endl;
     }
-
     return 0;
 }
