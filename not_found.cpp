@@ -6,7 +6,8 @@
 #include <string.h>
 
 #define Debug false
-
+#define Time true
+clock_t  startT ,endT;
 #define Len 1 << 21
 
 using namespace std;
@@ -105,10 +106,11 @@ void binary_search() {
 
 int main() {
 #ifndef _OJ_
-    //    freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
-    freopen("/Users/xxy/CLionProjects/DSA/PA_2/input.txt", "r", stdin);
+        freopen("/Users/iMac-2/CLionProjects/PA_2/input.txt", "r", stdin);
+//    freopen("/Users/xxy/CLionProjects/DSA/PA_2/input.txt", "r", stdin);
     //    freopen("/Users/xxy/CLionProjects/DSA/PA_2/output.txt", "w", stdout);
 #endif
+    if (Time)startT = clock();
 char ch;
 memset(list, 0, sizeof(char) * Len);
 while (true) {
@@ -141,5 +143,9 @@ if (len == 1) {
     }
 }
 binary_search();
+    if (Time) {
+        endT = clock();
+        cout << "cost" << (double) (endT - startT) / CLOCKS_PER_SEC << "s" << endl;
+    }
 return 0;
 }
