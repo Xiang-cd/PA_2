@@ -11,15 +11,14 @@ using namespace std;
 typedef long l;
 clock_t startT, endT;
 int N;
-char tmp[5] = "";
-char gtmp[9] = "";
+unsigned char gtmp[10] = "";
 char queue[9] = {};
 int queue_len = 0;
 l inputindex;
 l table[Size] = {0};
 unsigned positions[Size] = {0};
 bool Di[Size] = {false};
-unsigned char *salt = (unsigned char *) tmp;
+unsigned char salt[6] = "";
 string alpha = "0123456789tsinghua";
 
 inline void push(char a) {
@@ -78,7 +77,7 @@ inline l stol(char *a) {
 }
 
 inline void ltos(l x) {
-    memset(gtmp, 0, 8);
+    memset(gtmp, 0, 9);
     for (int i = 0; i < 8; ++i) {
         gtmp[i] = itoc(int(x % 19));
         x = x / 19;
@@ -129,8 +128,11 @@ void init() {
     for (l i = 0; i < 19 * 19 * 19 * 19 * 19; ++i) {
         if (is_enmpty(i))continue;
         ltos(i);
-        unsigned pos = crc32(0, (unsigned char *) gtmp, strlen((char *) gtmp));
-        pos = crc32(pos, salt, strlen((char *) salt));
+
+        unsigned pos = crc32(0,  gtmp, strlen((char *) gtmp));
+//        if (gtmp[0] =='0' and gtmp[1]=='0' and gtmp[2] =='0' and gtmp[3] =='0' and  gtmp[4]=='0')cout<<gtmp<<" "<<i<<" " <<pos<<" "<< strlen((char *) gtmp)<<endl;
+        pos = crc32(pos, salt, strlen((char*)salt));
+//        if (gtmp[0] =='0' and gtmp[1]=='0' and gtmp[2] =='0' and gtmp[3] =='0' and  gtmp[4]=='0')cout<<gtmp<<" "<<i<<" " <<pos<<endl;
         put(pos, i);
     }
 }
@@ -159,14 +161,8 @@ int main() {
     if (Time) startT = clock();
     read();
     init();
-//    char s[9] = "1234567";
-//    l j = stol(s);
-//    unsigned pos = crc32(0, (unsigned char *) s, strlen((char *) s));
-//    pos = crc32(pos, salt, strlen((char *) salt));
-//    cout<<pos <<"!"<< j<<endl;
     for (int i = 0; i < N; ++i) {
         cin >> hex >> inputindex;
-//        cout<<inputindex<<endl;
         unsigned posi = get(inputindex);
         if (posi == -1)cout << "Duplicate" << endl;
         else if (posi == 0) cout << "No" << endl;
