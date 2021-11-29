@@ -68,9 +68,9 @@ inline char itoc(int x) {
 
 inline l stol(char *a) {
     l ans = 0;
-    int pow = 1;
+    l pow = 1;
     for (int i = 0; i < 8; ++i) {
-        ans += ctoi(a[i]) * pow;
+        ans += (l)ctoi(a[i]) * pow;
         pow = pow * 19;
     }
     return ans;
@@ -87,14 +87,8 @@ inline void ltos(l x) {
 inline void put(unsigned pos, l i) {
     ltos(i);
     unsigned posi = pos % Mod;
-    bool flag = true;
     while (table[posi]) {
         if (positions[posi] == pos and i != table[posi]) { //位置相同，但代表但字符串不同，则为重复
-            if (Debug and flag) {
-                printf("%u %u %ld  ", posi, pos, i);
-                cout << gtmp << endl;
-                flag = false;
-            }
             Di[posi] = true;
             return;
         } else if (positions[posi] == pos and i == table[posi]) return; //重复插入，置之不理
@@ -128,11 +122,8 @@ void init() {
     for (l i = 0; i < 19 * 19 * 19 * 19 * 19; ++i) {
         if (is_enmpty(i))continue;
         ltos(i);
-
         unsigned pos = crc32(0,  gtmp, strlen((char *) gtmp));
-//        if (gtmp[0] =='0' and gtmp[1]=='0' and gtmp[2] =='0' and gtmp[3] =='0' and  gtmp[4]=='0')cout<<gtmp<<" "<<i<<" " <<pos<<" "<< strlen((char *) gtmp)<<endl;
         pos = crc32(pos, salt, strlen((char*)salt));
-//        if (gtmp[0] =='0' and gtmp[1]=='0' and gtmp[2] =='0' and gtmp[3] =='0' and  gtmp[4]=='0')cout<<gtmp<<" "<<i<<" " <<pos<<endl;
         put(pos, i);
     }
 }

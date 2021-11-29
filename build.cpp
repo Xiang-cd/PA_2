@@ -1,11 +1,8 @@
 //
 // Created by Mac-2读者 on 2021/11/18.
 //
-
 #include <iostream>
-
 #define  Debug false
-
 using namespace std;
 
 class Node {
@@ -71,13 +68,6 @@ public:
             x = x->parent;
         }
     }
-
-//    void update_size_init(Node *x) {
-//        while (x->parent){
-//            x->parent->size += x->size;
-//            x =x->parent    ;
-//        }
-//    }
 
     Node *find_index_child(Node *p, int x) {
         if (!p->left)return NULL;

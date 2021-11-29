@@ -105,7 +105,6 @@ ll  flip(int node, int start, int end) {
 }
 
 inline ll  qurey(int node, int start, int end) {
-    //  返回找到的start_index位置
     int left = segTree[node].begin;
     int right = segTree[node].begin + segTree[node].len;
     if (segTree[node].len == 0) return 0;
