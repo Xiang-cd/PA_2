@@ -3,4 +3,4 @@ project(PA_2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(PA_2  not_found2.cpp)
+add_executable(PA_2  hacker.cpp crc32.cpp)
